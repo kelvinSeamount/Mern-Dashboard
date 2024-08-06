@@ -1,21 +1,24 @@
 import {
   CartesianGrid,
   Cell,
-  Legend,
   Line,
   LineChart,
   Pie,
   PieChart,
   ResponsiveContainer,
+  Scatter,
+  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
+  ZAxis,
 } from "recharts";
 import BoxHeader from "../../components/BoxHeader";
 import DashBoardBox from "../../components/DashBoardBox";
 import { useGetKpisQuery, useGetProductsQuery } from "../../state/api";
-import { useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useMemo } from "react";
+import FlexBetween from "../../components/FlexBetween";
 
 const pieData = [
   { name: "Group A", value: 600 },
@@ -27,6 +30,7 @@ const Row2 = () => {
   const { palette } = useTheme();
   //Set up colors for piechart
   const pieColors = [palette.primary[800], palette.primary[300]];
+
   //Create variable OperationnalWxpenese
   const operationalExpenses = useMemo(() => {
     return (
@@ -44,7 +48,22 @@ const Row2 = () => {
       )
     );
   }, [operationalData]);
-  //console.log("data:", data);
+
+  //Create variable ProductExpenseData
+  const productExpenseData = useMemo(() => {
+    return (
+      //when data exist
+      productData &&
+      productData?.map(({ _id, price, expense }) => {
+        return {
+          price: price,
+          expense: expense,
+          id: _id,
+        };
+      })
+    );
+  }, [productData]);
+  console.log("productData", productData);
   return (
     <>
       <DashBoardBox gridArea="d">
@@ -100,31 +119,94 @@ const Row2 = () => {
         </ResponsiveContainer>
       </DashBoardBox>
       <DashBoardBox gridArea="e">
-        <PieChart
-          width={100}
-          height={100}
-          margin={{
-            top: 0,
-            right: -10,
-            left: 10,
-            bottom: 0,
-          }}
-        >
-          <Pie
-            stroke="none"
-            data={pieData}
-            innerRadius={18}
-            outerRadius={38}
-            paddingAngle={2}
-            dataKey="value"
+        <BoxHeader title="Campaigns and Targets" sideText="+4%" />
+        <FlexBetween mt="0.25rem" gap="1.5rem" pr="1rem">
+          <PieChart
+            width={100}
+            height={100}
+            margin={{
+              top: 0,
+              right: -10,
+              left: 10,
+              bottom: 0,
+            }}
           >
-            {pieData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={pieColors[index]} />
-            ))}
-          </Pie>
-        </PieChart>
+            <Pie
+              stroke="none"
+              data={pieData}
+              innerRadius={18}
+              outerRadius={38}
+              paddingAngle={2}
+              dataKey="value"
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={pieColors[index]} />
+              ))}
+            </Pie>
+          </PieChart>
+          <Box ml="-0.7rem" flexBasis="40%" textAlign="center">
+            <Typography variant="h5">Target Sales</Typography>
+            <Typography m="0.3rem 0" variant="h3" color={palette.primary[300]}>
+              83
+            </Typography>
+            <Typography variant="h6">
+              Goals of the campaign that is desired
+            </Typography>
+          </Box>
+          <Box flexBasis="40%">
+            <Typography variant="h5">Losses in Revevnue</Typography>
+            <Typography variant="h6">Losses are down by 25%</Typography>
+            <Typography m="0.4rem" variant="h5">
+              Profit Margins
+            </Typography>
+            <Typography variant="h6">
+              Margins are up by 30% from last month.
+            </Typography>
+          </Box>
+        </FlexBetween>
       </DashBoardBox>
-      <DashBoardBox gridArea="f"></DashBoardBox>
+      <DashBoardBox gridArea="f">
+        <BoxHeader title="Product Prices vs Expenses" sideText="+4%" />
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart
+            margin={{
+              top: 20,
+              right: 25,
+              bottom: 40,
+              left: 0,
+            }}
+          >
+            <CartesianGrid stroke={palette?.grey[800]} />
+            <XAxis
+              type="number"
+              dataKey="price"
+              name="price"
+              axisLine={false}
+              tickLine={false}
+              style={{ fontSize: "10px" }}
+              //This formats values in our X axis($50)
+              tickFormatter={(v) => `$${v}`}
+            />
+            <YAxis
+              type="number"
+              dataKey="expense"
+              name="expense"
+              axisLine={false}
+              tickLine={false}
+              style={{ fontSize: "10px" }}
+              //This formats values in our Y axis($50)
+              tickFormatter={(v) => `$${v}`}
+            />
+            <ZAxis type="number" range={[20]} />
+            <Tooltip formatter={(v) => `$${v}`} />
+            <Scatter
+              name="Product Expense Ratio"
+              data={productExpenseData}
+              fill={palette?.tertiary[500]}
+            />
+          </ScatterChart>
+        </ResponsiveContainer>
+      </DashBoardBox>
     </>
   );
 };
